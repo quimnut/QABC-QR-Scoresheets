@@ -3,6 +3,6 @@ Scoresheet tools for brewing competitions using BCOE&M
 
 Takes the entries paid csv export to generate scoreesheets with judging details and QR codes.
 
-Processes and renames into PDF files for upload.
+Processes into per-entry pdf files for upload.
 
-Uses pySimpleGUI to make it easy on windows.
+Uses PySimpleGUI to make it easy on windows.
