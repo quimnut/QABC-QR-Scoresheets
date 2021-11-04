@@ -5,4 +5,4 @@ Takes the entries paid csv export to generate scoresheets with judging details a
 
 Produces per-entry pdf files for upload.
 
-Uses PySimpleGUI to make it easy on windows.
+Uses PySimpleGUI to make it easy on windows, use python 3.10 or find your own requirements.
