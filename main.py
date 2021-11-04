@@ -1,6 +1,3 @@
-from ntpath import join
-import re
-from threading import main_thread
 import PySimpleGUI as sg
 import os
 import csv
@@ -142,7 +139,7 @@ def generatePDF(entries, sheet, category, outputdir, number_of_pages):
             rect = fitz.paper_rect("a4")
             outpage = outfile.new_page(width=rect.width, height=rect.height)
             outpage.insert_image(rect, stream=png)
-    o_filename = os.path.join(outputdir, 'category ' + category + '.pdf')
+    o_filename = os.path.join(outputdir, f'category_{category}.pdf')
     outfile.save(o_filename, garbage=3, deflate=True)
 
 def insertOrCreateScoresheet(fn, pageno, doc):
