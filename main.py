@@ -1,6 +1,7 @@
 import PySimpleGUI as sg
 import os
 import csv
+from PySimpleGUI.PySimpleGUI import T
 import qrcode
 import numpy as np
 from PIL import Image, ImageOps, ImageDraw, ImageFont
@@ -9,7 +10,6 @@ import io
 import operator
 import cv2
 from pyzbar.pyzbar import decode
-
 
 # old function that reads entries from a CSV file
 def parseCSV(bcoemCSV):
@@ -102,6 +102,7 @@ def previewPDF(filename):
             widg.update()
     pix = page.get_pixmap()
     img = pix.tobytes("ppm")
+    pdf.close()
     return img
 
 def generatePDF(entries, sheet, category, outputdir, number_of_pages):
@@ -217,8 +218,55 @@ def sortScannedScoresheets(f_scanned, f_outputdir):
             out = os.path.join(f_outputdir, fn)
             insertOrCreateScoresheet(out, page, doc)
     doc.close()
-     
 
+def getNumberofPages(filename):
+    pdf = fitz.open(filename)
+    count = pdf.pageCount
+    pdf.close()
+    return count
+
+def deletePage(filename, page):
+    pdf = fitz.open(filename)
+    pdf.deletePage(page)
+    pdf.save(filename, garbage=3, deflate=True)
+    pdf.close()
+    
+def processReject(f_outputdir, page):
+    rejects = os.path.join(f_outputdir, 'rejects.pdf')
+    if os.path.exists(rejects):
+        doc = fitz.open(rejects)
+    realpage = page - 1
+    page = doc[realpage]
+    pix = page.get_pixmap()
+    data = pix.tobytes("ppm")
+    reject_layout = [[
+        [sg.Frame(layout=[[
+            sg.Button("Delete This Page", enable_events=True, key='-DELETEREJECT-'),
+            sg.Text('or'),
+            sg.Button("Assign Judging Numner", enable_events=True, key='-CORRECTREJECT-'),
+            sg.InputText(size=(6, 1), key='assignednumber')
+        ]],title='Process Reject:',vertical_alignment='center', pad=(0,0))],
+        [sg.Frame(layout=[[
+            sg.Image(data=data, key='-REJECTIMAGE-')
+        ]],title='Rejected Scoresheet:',vertical_alignment='center', pad=(0,0))]
+    ]]
+    window = sg.Window('Process Reject', reject_layout, margins=(10, 10)).Finalize() 
+    while True:
+        event, values = window.read()
+        if event == sg.WINDOW_CLOSED:
+            break
+        elif event == '-DELETEREJECT-':
+            deletePage(page)
+            break
+        elif event == '-CORRECTREJECT-':
+            if not len(values['assignednumber']) == 6:
+                # pad assignednumber with zeros
+                assignednumber = values['assignednumber']
+                assignednumber = assignednumber.zfill(6)
+            insertOrCreateScoresheet(os.path.join(f_outputdir, values['assignednumber'] + '.pdf'), page, doc)
+            deletePage(page)
+            break
+    window.close()
 
 main_layout = [[
     sg.Frame(layout=[[
@@ -267,16 +315,32 @@ main_layout = [[
     ],[
         sg.Button("Go", enable_events=True, key="-SORTSCORESHEETS-")
     ]], title='Process Scanned Scoresheets:',element_justification='right', pad=(0,0))
+    ],
+    [
+    sg.Frame(layout=[[
+        sg.Text("Review rejected scans"),
+        sg.Text("Page"),sg.Combo(values=[], key='-EDITPAGE-'),
+        sg.Button("Review", enable_events=True, key="-PROCESSREJECTS-", disabled=True)
+    ]], title='Process Rejected Scans:',element_justification='right', pad=(0,0))
     ]
     ]
 
 
 if __name__ == '__main__':
     sg.theme('DarkBlue14')
-    window = sg.Window(title="ScoreSheet Wizard", layout=main_layout, margins=(100, 50))
+    window = sg.Window(title="ScoreSheet Wizard", layout=main_layout, margins=(10, 10))
 
     while True:
         event, values = window.read()
+        # if rejects.pdf exists enable review button
+        f_outputdir = values['-SORTEDOUTPUTDIR-']
+        if os.path.isfile(os.path.join(f_outputdir,'rejects.pdf')):
+            window['-PROCESSREJECTS-'].update(disabled=False)
+            number_of_pages = getNumberofPages(os.path.join(f_outputdir,'rejects.pdf'))
+            list_of_pages = [str(i) for i in range(1,number_of_pages+1)]
+            window['-EDITPAGE-'].update(values=list_of_pages)
+        else:
+            window['-PROCESSREJECTS-'].update(disabled=True)
         if event == sg.WIN_CLOSED: 
             break
         elif event == "-PREVIEWBEERSHEET-":
@@ -363,5 +427,12 @@ if __name__ == '__main__':
                 sg.popup_error("Sorted PDF folder not found")
                 break
             sortScannedScoresheets(f_scanned, f_outputdir)
+        elif event == "-PROCESSREJECTS-":
+            f_outputdir = values['-SORTEDOUTPUTDIR-']
+            if not os.path.isdir(f_outputdir):
+                sg.popup_error("Sorted PDF folder not found")
+                break
+            page = int(values['-EDITPAGE-'])
+            processReject(f_outputdir, page)
             
     window.close()
