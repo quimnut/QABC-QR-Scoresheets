@@ -1,7 +1,6 @@
 import PySimpleGUI as sg
 import os
 import csv
-from PySimpleGUI.PySimpleGUI import T
 import qrcode
 import numpy as np
 from PIL import Image, ImageOps, ImageDraw, ImageFont
@@ -243,7 +242,7 @@ def processReject(f_outputdir, page):
         [sg.Frame(layout=[[
             sg.Button("Delete This Page", enable_events=True, key='-DELETEREJECT-'),
             sg.Text('or'),
-            sg.Button("Assign Judging Numner", enable_events=True, key='-CORRECTREJECT-'),
+            sg.Button("Assign Judging Number", enable_events=True, key='-CORRECTREJECT-'),
             sg.InputText(size=(6, 1), key='assignednumber')
         ]],title='Process Reject:',vertical_alignment='center', pad=(0,0))],
         [sg.Frame(layout=[[
