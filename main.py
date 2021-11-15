@@ -263,7 +263,11 @@ def processReject(f_outputdir, page):
                 # pad assignednumber with zeros
                 assignednumber = values['assignednumber']
                 assignednumber = assignednumber.zfill(6)
-            insertOrCreateScoresheet(os.path.join(f_outputdir, values['assignednumber'] + '.pdf'), page, doc)
+                filename = assignednumber + '.pdf'
+            else:
+                assignednumber = values['assignednumber']
+                filename = assignednumber + '.pdf'
+            insertOrCreateScoresheet(os.path.join(f_outputdir, filename), page, doc)
             deletePage(page)
             break
     window.close()
