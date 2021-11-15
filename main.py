@@ -226,9 +226,13 @@ def getNumberofPages(filename):
 
 def deletePage(filename, page):
     pdf = fitz.open(filename)
-    pdf.deletePage(page)
-    pdf.save(filename, garbage=3, deflate=True)
-    pdf.close()
+    pdf.delete_page(page)
+    if pdf.pageCount == 0:
+        pdf.close()
+        os.remove(filename)
+    else:
+        pdf.save(filename, incremental=True, encryption=fitz.PDF_ENCRYPT_KEEP, deflate=True)
+        pdf.close()
     
 def processReject(f_outputdir, page):
     rejects = os.path.join(f_outputdir, 'rejects.pdf')
@@ -254,9 +258,6 @@ def processReject(f_outputdir, page):
         event, values = window.read()
         if event == sg.WINDOW_CLOSED:
             break
-        elif event == '-DELETEREJECT-':
-            deletePage(page)
-            break
         elif event == '-CORRECTREJECT-':
             if not len(values['assignednumber']) == 6:
                 # pad assignednumber with zeros
@@ -266,33 +267,39 @@ def processReject(f_outputdir, page):
             else:
                 assignednumber = values['assignednumber']
                 filename = assignednumber + '.pdf'
-            insertOrCreateScoresheet(os.path.join(f_outputdir, filename), page, doc)
-            deletePage(page)
+            fullpath = os.path.join(f_outputdir, filename)
+            insertOrCreateScoresheet(fullpath, realpage, doc)
+            doc.close()
+            deletePage(rejects, realpage)
+            break
+        elif event == '-DELETEREJECT-':
+            doc.close()
+            deletePage(rejects, realpage)
             break
     window.close()
 
 main_layout = [[
     sg.Frame(layout=[[
         sg.Text("Beer Scoresheet"),
-        sg.In(size=(25, 1), enable_events=True, key="-BEERSHEET-"),
+        sg.In(size=(45, 1), enable_events=True, key="-BEERSHEET-"),
         sg.FileBrowse(),
         sg.Button("Preview", enable_events=True, key="-PREVIEWBEERSHEET-")
     ],
     [
         sg.Text("Cider Scoresheet"),
-        sg.In(size=(25, 1), enable_events=True, key="-CIDERSHEET-"),
+        sg.In(size=(45, 1), enable_events=True, key="-CIDERSHEET-"),
         sg.FileBrowse(),
         sg.Button("Preview", enable_events=True, key="-PREVIEWCIDERSHEET-")
     ],
     [
         sg.Text("Mead Scoresheet"),
-        sg.In(size=(25, 1), enable_events=True, key="-MEADSHEET-"),
+        sg.In(size=(45, 1), enable_events=True, key="-MEADSHEET-"),
         sg.FileBrowse(),
         sg.Button("Preview", enable_events=True, key="-PREVIEWMEADSHEET-")
     ],
     [
         sg.Text("Entries Paid CSV w/ all flights assigned"),
-        sg.In(size=(25, 1), enable_events=True, key="-ENTRIES-"),
+        sg.In(size=(26, 1), enable_events=True, key="-ENTRIES-"),
         sg.FileBrowse(),
         sg.Button("Preview", enable_events=True, key="-PREVIEWCSV-")
     ]], title='Inputs:',element_justification='right', pad=(0,0)) 
@@ -300,7 +307,7 @@ main_layout = [[
     [
     sg.Frame(layout=[[
         sg.Text("Output Folder"),
-        sg.In(size=(25, 1), enable_events=True, key="-OUTPUTDIR-"),
+        sg.In(size=(29, 1), enable_events=True, key="-OUTPUTDIR-"),
         sg.FolderBrowse(),
         sg.Text('Copies'),sg.Combo([1, 2, 3], default_value=1, key='-COPIES-'),
         sg.Button("Generate PDF", enable_events=True, key="-OUTPUTBEERSHEETS-")
@@ -309,11 +316,11 @@ main_layout = [[
     [
     sg.Frame(layout=[[
         sg.Text("Scanned Scoresheets"),
-        sg.In(size=(25, 1), enable_events=True, key="-SCANFILE-"),
+        sg.In(size=(50, 1), enable_events=True, key="-SCANFILE-"),
         sg.FileBrowse()
     ],[
         sg.Text("Sorted PDF Folder"),
-        sg.In(size=(25, 1), enable_events=True, key="-SORTEDOUTPUTDIR-"),
+        sg.In(size=(50, 1), enable_events=True, key="-SORTEDOUTPUTDIR-"),
         sg.FolderBrowse() 
     ],[
         sg.Button("Go", enable_events=True, key="-SORTSCORESHEETS-")
@@ -331,11 +338,9 @@ main_layout = [[
 
 if __name__ == '__main__':
     sg.theme('DarkBlue14')
-    window = sg.Window(title="ScoreSheet Wizard", layout=main_layout, margins=(10, 10))
-
+    window = sg.Window(title="QABC ScoreSheet Wizard", layout=main_layout, margins=(10, 10))
     while True:
         event, values = window.read()
-        # if rejects.pdf exists enable review button
         f_outputdir = values['-SORTEDOUTPUTDIR-']
         if os.path.isfile(os.path.join(f_outputdir,'rejects.pdf')):
             window['-PROCESSREJECTS-'].update(disabled=False)
@@ -430,6 +435,14 @@ if __name__ == '__main__':
                 sg.popup_error("Sorted PDF folder not found")
                 break
             sortScannedScoresheets(f_scanned, f_outputdir)
+            if os.path.isfile(os.path.join(f_outputdir,'rejects.pdf')):
+                window['-PROCESSREJECTS-'].update(disabled=False)
+                number_of_pages = getNumberofPages(os.path.join(f_outputdir,'rejects.pdf'))
+                list_of_pages = [str(i) for i in range(1,number_of_pages+1)]
+                window['-EDITPAGE-'].update(values=list_of_pages)
+            else:
+                window['-PROCESSREJECTS-'].update(disabled=True)
+            window.refresh()
         elif event == "-PROCESSREJECTS-":
             f_outputdir = values['-SORTEDOUTPUTDIR-']
             if not os.path.isdir(f_outputdir):
@@ -437,5 +450,13 @@ if __name__ == '__main__':
                 break
             page = int(values['-EDITPAGE-'])
             processReject(f_outputdir, page)
+            if os.path.isfile(os.path.join(f_outputdir,'rejects.pdf')):
+                window['-PROCESSREJECTS-'].update(disabled=False)
+                number_of_pages = getNumberofPages(os.path.join(f_outputdir,'rejects.pdf'))
+                list_of_pages = [str(i) for i in range(1,number_of_pages+1)]
+                window['-EDITPAGE-'].update(values=list_of_pages)
+            else:
+                window['-PROCESSREJECTS-'].update(disabled=True)
+            window.refresh()
             
     window.close()
