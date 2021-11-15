@@ -28,6 +28,6 @@ If there are failed scans, choose the page to review.
 
 ![selectreject](https://user-images.githubusercontent.com/2128947/141775739-ea05000e-5032-4608-a252-9b4de0881b43.png)
 
-You will have the option to delete the page, or assign a judging number, in shich case it will copy the page and delete it from the rejects file.
+You will have the option to delete the page, or assign a judging number, in which case it will copy the page and delete it from the rejects file.
 
 ![processreject](https://user-images.githubusercontent.com/2128947/141775720-e2b25125-de9b-47ae-bdd6-ed6a89d1c104.png)
