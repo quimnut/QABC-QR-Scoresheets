@@ -1,8 +1,10 @@
 # QABC-QR-Scoresheets
-Scoresheet tools for brewing competitions using BCOE&M
+Scoresheet tool for brewing competitions using BCOE&M
 
 Takes the entries paid csv export to generate scoresheets with judging details and QR codes for post processing.
 
-Produces per-entry pdf files for upload.
+Post processes scoresheets into judging numbers for upload. Process bad scans and manually assign.
 
-Uses PySimpleGUI to make it easy on windows, use python 3.10 or find your own requirements.
+## Usage
+Select the scoresheets you choose to use, the CSV (with tables assigned).
+
