@@ -31,3 +31,6 @@ If there are failed scans, choose the page to review.
 You will have the option to delete the page, or assign a judging number, in which case it will copy the page and delete it from the rejects file.
 
 ![processreject](https://user-images.githubusercontent.com/2128947/141775720-e2b25125-de9b-47ae-bdd6-ed6a89d1c104.png)
+
+# Windows binary
+[QABC Scoresheet Wizard v0.1.zip](https://objectstorage.ap-sydney-1.oraclecloud.com/p/Un0o3uRORVQk6U35sz40OtBQ6CQH-8_ex1womhe0wkPQAQEU_0mAqsp6vzsYvuVK/n/sdodooe6mbu1/b/goat-bucket/o/QABC%20Scoresheet%20Wizard%20v0.1.zip)
