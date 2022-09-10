@@ -12,7 +12,7 @@ from pyzbar.pyzbar import decode
 
 # old function that reads entries from a CSV file
 def parseCSV(bcoemCSV):
-    with open(bcoemCSV, encoding='utf-8-sig') as csvfile:
+    with open(bcoemCSV, encoding='latin') as csvfile:
         readCSV = csv.DictReader(csvfile, delimiter=',')
         entries = []
         for row in readCSV:
