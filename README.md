@@ -6,6 +6,18 @@ Takes the entries paid csv export to generate scoresheets with judging details a
 Post processes scoresheets into judging numbers for upload. Process bad scans and manually assign.
 
 ## Usage
+Under windows I suggest WSL/Ubuntu and an x11 server, say mobaxterm or something.
+```
+git clone git@github.com:quimnut/QABC-QR-Scoresheets.git
+cd QABC-QR-Scoresheets/
+python3 -m venv .
+source bin/activate
+pip3 install --upgrade pip
+pip3 install -r requirements.txt
+python main.py
+```
+
+## Usage
 Select the scoresheets you choose to use, the CSV (with tables assigned).
 
 ![generate](https://user-images.githubusercontent.com/2128947/141775701-4aece719-ef86-47cd-aa8c-4ba85b26de2b.png)
