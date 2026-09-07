@@ -1,6 +1,0 @@
-qrcode
-numpy
-Pillow
-PyMuPDF
-opencv-python
-pyzbar

@@ -1,0 +1,42 @@
+---
+import "../styles/global.css";
+export interface Props {
+  title?: string;
+  activeTab: "generate" | "process";
+}
+const { title = "QABC Scoresheet Manager", activeTab } = Astro.props;
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{title}</title>
+  </head>
+  <body>
+    <div class="container">
+      <header>
+        <h1>QABC Scoresheet Manager</h1>
+        <p class="subtitle">Generate and process QABC competition scoresheets</p>
+      </header>
+
+      <nav class="tabs">
+        <a href="/generate/" class={`tab${activeTab === "generate" ? " active" : ""}`}>
+          Generate Scoresheets
+        </a>
+        <a href="/process/" class={`tab${activeTab === "process" ? " active" : ""}`}>
+          Process Scoresheets
+        </a>
+      </nav>
+
+      <main>
+        <slot />
+      </main>
+
+      <footer>
+        <p>QABC Scoresheet Manager v4.0</p>
+      </footer>
+    </div>
+  </body>
+</html>
